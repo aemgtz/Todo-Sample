@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/LoginFragment">
+
+    <fragment
+        android:id="@+id/LoginFragment"
+        android:name="com.aemgtz.todo.login.LoginFragment"
+        android:label="@string/login_fragment_label"
+        tools:layout="@layout/fragment_login">
+
+        <action
+            android:id="@+id/action_LoginFragment_to_TaskFragment"
+            app:destination="@id/TaskFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/TaskFragment"
+        android:name="com.aemgtz.todo.task.TaskFragment"
+        android:label="@string/task_fragment_label"
+        tools:layout="@layout/fragment_task">
+
+        <action
+            android:id="@+id/action_TaskFragment_to_AddEditTaskFragment"
+            app:destination="@id/AddEditTaskFragment" />
+
+        <action
+            android:id="@+id/action_TaskFragment_to_LoginFragment"
+            app:destination="@id/LoginFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/AddEditTaskFragment"
+        android:name="com.aemgtz.todo.addedittask.AddEditTaskFragment"
+        android:label="@string/add_edit_task_fragment_label"
+        tools:layout="@layout/fragment_add_edit_task">
+        <action
+            android:id="@+id/action_AddEditTaskFragment_to_TaskFragment"
+            app:destination="@id/TaskFragment" />
+    </fragment>
+</navigation>

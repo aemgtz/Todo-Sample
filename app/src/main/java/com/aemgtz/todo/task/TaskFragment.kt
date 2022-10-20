@@ -15,6 +15,7 @@ import com.aemgtz.todo.addedittask.AddEditTaskActivity.Companion.EXTRA_TASK
 import com.aemgtz.todo.data.Injection
 import com.aemgtz.todo.data.Task
 import com.aemgtz.todo.databinding.FragmentTaskBinding
+import com.google.firebase.firestore.FirebaseFirestore
 
 /**
  * A simple [Fragment] subclass as the default destination in the navigation.
@@ -53,7 +54,7 @@ class TaskFragment() : Fragment(), TaskContract.View {
         val currentUser = args.user
         if (currentUser != null){
             Toast.makeText(requireContext(), "Welcome : ${currentUser.email}", Toast.LENGTH_LONG).show()
-            presenter = TaskPresenter(this, Injection.provideTasksRepository(requireContext().applicationContext, currentUser))
+            presenter = TaskPresenter(this, Injection.provideTasksRepository(requireContext().applicationContext, currentUser, FirebaseFirestore.getInstance()))
         }
     }
 

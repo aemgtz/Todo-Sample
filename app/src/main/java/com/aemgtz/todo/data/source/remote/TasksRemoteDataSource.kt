@@ -22,23 +22,18 @@ import com.aemgtz.todo.data.Task
 import com.aemgtz.todo.data.TasksDataSource
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.ktx.firestore
-import com.google.firebase.firestore.ktx.toObject
-import com.google.firebase.ktx.Firebase
 
 /**
  * Implementation of the data source that adds a latency simulating network.
  */
-class TasksRemoteDataSource private constructor(val firebaseUser: FirebaseUser) : TasksDataSource {
+class TasksRemoteDataSource private constructor(private  val firebaseUser: FirebaseUser, private val fireStore : FirebaseFirestore) : TasksDataSource {
 
-    private var firestore: FirebaseFirestore = Firebase.firestore
 
     private var TASKS_SERVICE_DATA = LinkedHashMap<String, Task>(2)
 
     init {
 
     }
-
     /**
      * Note: [LoadTasksCallback.onDataNotAvailable] is never fired. In a real remote data
      * source implementation, this would be fired if the server can't be contacted or the server
@@ -47,14 +42,9 @@ class TasksRemoteDataSource private constructor(val firebaseUser: FirebaseUser) 
     override fun getTasks(callback: TasksDataSource.LoadTasksCallback) {
         // Simulate network by delaying the execution.
         // [START get_all_users]
-        firestore.collection(TASK_COLLECTION_NAME)
+        fireStore.collection(TASK_COLLECTION_NAME)
             .get()
             .addOnSuccessListener { result ->
-
-//                val tasks = result.toObjects(Task::class.java)
-//                tasks.forEach {
-//                    Log.d("RemoteDataSource", it.toString())
-//                }
                 val tasks = mutableListOf<Task>()
                 for (document in result) {
                     val task = document.toObject(Task::class.java)
@@ -68,11 +58,6 @@ class TasksRemoteDataSource private constructor(val firebaseUser: FirebaseUser) 
                 callback.onDataNotAvailable()
             }
         // [END get_all_users]
-
-//        val tasks = Lists.newArrayList(TASKS_SERVICE_DATA.values)
-//        Handler().postDelayed({
-//            callback.onTasksLoaded(tasks)
-//        }, Companion.SERVICE_LATENCY_IN_MILLIS)
     }
 
     /**
@@ -150,10 +135,10 @@ class TasksRemoteDataSource private constructor(val firebaseUser: FirebaseUser) 
         private var INSTANCE: TasksRemoteDataSource? = null
 
         @JvmStatic
-        fun getInstance(firebaseUser: FirebaseUser): TasksRemoteDataSource {
+        fun getInstance(firebaseUser: FirebaseUser, fireStore: FirebaseFirestore): TasksRemoteDataSource {
             if (INSTANCE == null) {
                 synchronized(TasksRemoteDataSource::javaClass) {
-                    INSTANCE = TasksRemoteDataSource(firebaseUser)
+                    INSTANCE = TasksRemoteDataSource(firebaseUser, fireStore)
                 }
             }
             return INSTANCE!!

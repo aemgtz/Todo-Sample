@@ -21,6 +21,7 @@ import com.aemgtz.todo.data.source.local.ToDoDatabase
 import com.aemgtz.todo.data.source.remote.TasksRemoteDataSource
 import com.aemgtz.todo.utils.AppExecutors
 import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.firestore.FirebaseFirestore
 
 /**
  * Enables injection of mock implementations for
@@ -29,10 +30,9 @@ import com.google.firebase.auth.FirebaseUser
  */
 object Injection {
 
-    fun provideTasksRepository(context: Context, firebaseUser: FirebaseUser): TasksRepository {
+    fun provideTasksRepository(context: Context, firebaseUser: FirebaseUser, fireStore: FirebaseFirestore): TasksRepository {
         val database = ToDoDatabase.getInstance(context)
-
-        return TasksRepository.getInstance(TasksRemoteDataSource.getInstance(firebaseUser),
+        return TasksRepository.getInstance(TasksRemoteDataSource.getInstance(firebaseUser, fireStore),
                 TasksLocalDataSource.getInstance(AppExecutors(), database.taskDao()))
     }
 }

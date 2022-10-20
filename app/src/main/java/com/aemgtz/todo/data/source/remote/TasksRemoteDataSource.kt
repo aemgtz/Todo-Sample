@@ -16,27 +16,27 @@
 package com.aemgtz.todo.data.source.remote
 
 import android.os.Handler
+import android.util.Log
+import androidx.annotation.VisibleForTesting
 import com.aemgtz.todo.data.Task
 import com.aemgtz.todo.data.TasksDataSource
-import com.google.common.collect.Lists
+import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.firestore.ktx.toObject
+import com.google.firebase.ktx.Firebase
 
 /**
  * Implementation of the data source that adds a latency simulating network.
  */
-object TasksRemoteDataSource : TasksDataSource {
+class TasksRemoteDataSource private constructor(val firebaseUser: FirebaseUser) : TasksDataSource {
 
-    private const val SERVICE_LATENCY_IN_MILLIS = 5000L
+    private var firestore: FirebaseFirestore = Firebase.firestore
 
-    private var TASKS_SERVICE_DATA = LinkedHashMap<Int, Task>(2)
+    private var TASKS_SERVICE_DATA = LinkedHashMap<String, Task>(2)
 
     init {
-        addTask(1, "Build tower in Pisa", "Ground looks good, no foundation work required.")
-        addTask(2, "Finish bridge in Tacoma", "Found awesome girders at half the cost!")
-    }
 
-    private fun addTask(id: Int, title: String, description: String) {
-        val newTask = Task(id, title, description, false)
-        TASKS_SERVICE_DATA[id] = newTask
     }
 
     /**
@@ -46,10 +46,33 @@ object TasksRemoteDataSource : TasksDataSource {
      */
     override fun getTasks(callback: TasksDataSource.LoadTasksCallback) {
         // Simulate network by delaying the execution.
-        val tasks = Lists.newArrayList(TASKS_SERVICE_DATA.values)
-        Handler().postDelayed({
-            callback.onTasksLoaded(tasks)
-        }, SERVICE_LATENCY_IN_MILLIS)
+        // [START get_all_users]
+        firestore.collection(TASK_COLLECTION_NAME)
+            .get()
+            .addOnSuccessListener { result ->
+
+//                val tasks = result.toObjects(Task::class.java)
+//                tasks.forEach {
+//                    Log.d("RemoteDataSource", it.toString())
+//                }
+                val tasks = mutableListOf<Task>()
+                for (document in result) {
+                    val task = document.toObject(Task::class.java)
+                    task.taskId = document.id
+                    tasks.add(task)
+                }
+                callback.onTasksLoaded(tasks)
+            }
+            .addOnFailureListener { exception ->
+                Log.w("RemoteDataSource", "Error getting documents.", exception)
+                callback.onDataNotAvailable()
+            }
+        // [END get_all_users]
+
+//        val tasks = Lists.newArrayList(TASKS_SERVICE_DATA.values)
+//        Handler().postDelayed({
+//            callback.onTasksLoaded(tasks)
+//        }, Companion.SERVICE_LATENCY_IN_MILLIS)
     }
 
     /**
@@ -57,21 +80,21 @@ object TasksRemoteDataSource : TasksDataSource {
      * source implementation, this would be fired if the server can't be contacted or the server
      * returns an error.
      */
-    override fun getTask(taskId: Int, callback: TasksDataSource.GetTaskCallback) {
+    override fun getTask(taskId: String, callback: TasksDataSource.GetTaskCallback) {
         val task = TASKS_SERVICE_DATA[taskId]
 
         // Simulate network by delaying the execution.
         with(Handler()) {
             if (task != null) {
-                postDelayed({ callback.onTaskLoaded(task) }, SERVICE_LATENCY_IN_MILLIS)
+                postDelayed({ callback.onTaskLoaded(task) }, Companion.SERVICE_LATENCY_IN_MILLIS)
             } else {
-                postDelayed({ callback.onDataNotAvailable() }, SERVICE_LATENCY_IN_MILLIS)
+                postDelayed({ callback.onDataNotAvailable() }, Companion.SERVICE_LATENCY_IN_MILLIS)
             }
         }
     }
 
     override fun saveTask(task: Task) {
-        task.id?.let { TASKS_SERVICE_DATA.put(it, task) }
+        task.taskId?.let { TASKS_SERVICE_DATA.put(it, task) }
     }
 
     override fun saveTask(task: Task, callback: TasksDataSource.GetTaskCallback) {
@@ -79,30 +102,30 @@ object TasksRemoteDataSource : TasksDataSource {
     }
 
     override fun completeTask(task: Task) {
-        val completedTask = Task(task.id, task.title, task.detail, true).apply {
+        val completedTask = Task(task.id, task.taskId, task.title, task.detail, true).apply {
             isCompleted = true
         }
-        task.id?.let { TASKS_SERVICE_DATA.put(it, completedTask) }
+        task.taskId?.let { TASKS_SERVICE_DATA.put(it, completedTask) }
     }
 
-    override fun completeTask(taskId: Int) {
+    override fun completeTask(taskId: String) {
         // Not required for the remote data source because the {@link TasksRepository} handles
         // converting from a {@code taskId} to a {@link task} using its cached data.
     }
 
     override fun activateTask(task: Task) {
-        val activeTask = Task(task.id, task.title, task.detail, task.isCompleted)
-        task.id?.let { TASKS_SERVICE_DATA.put(it, activeTask) }
+        val activeTask = Task(task.id, task.taskId, task.title, task.detail, task.isCompleted)
+        task.taskId?.let { TASKS_SERVICE_DATA.put(it, activeTask) }
     }
 
-    override fun activateTask(taskId: Int) {
+    override fun activateTask(taskId: String) {
         // Not required for the remote data source because the {@link TasksRepository} handles
         // converting from a {@code taskId} to a {@link task} using its cached data.
     }
 
     override fun clearCompletedTasks() {
         TASKS_SERVICE_DATA = TASKS_SERVICE_DATA.filterValues { !it.isCompleted
-        } as LinkedHashMap<Int, Task>
+        } as LinkedHashMap<String, Task>
     }
 
     override fun refreshTasks() {
@@ -114,7 +137,31 @@ object TasksRemoteDataSource : TasksDataSource {
         TASKS_SERVICE_DATA.clear()
     }
 
-    override fun deleteTask(taskId: Int) {
+    override fun deleteTask(taskId: String) {
         TASKS_SERVICE_DATA.remove(taskId)
+    }
+
+
+    companion object {
+
+        private const val SERVICE_LATENCY_IN_MILLIS = 5000L
+        private const val TASK_COLLECTION_NAME = "tasks"
+
+        private var INSTANCE: TasksRemoteDataSource? = null
+
+        @JvmStatic
+        fun getInstance(firebaseUser: FirebaseUser): TasksRemoteDataSource {
+            if (INSTANCE == null) {
+                synchronized(TasksRemoteDataSource::javaClass) {
+                    INSTANCE = TasksRemoteDataSource(firebaseUser)
+                }
+            }
+            return INSTANCE!!
+        }
+
+        @VisibleForTesting
+        fun clearInstance() {
+            INSTANCE = null
+        }
     }
 }

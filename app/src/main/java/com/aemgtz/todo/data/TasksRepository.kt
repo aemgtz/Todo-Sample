@@ -34,7 +34,7 @@ class TasksRepository(
     /**
      * This variable has public visibility so it can be accessed from tests.
      */
-    var cachedTasks: LinkedHashMap<Int, Task> = LinkedHashMap()
+    var cachedTasks: LinkedHashMap<String, Task> = LinkedHashMap()
 
     /**
      * Marks the cache as invalid, to force an update the next time data is requested. This variable
@@ -107,7 +107,7 @@ class TasksRepository(
         }
     }
 
-    override fun completeTask(taskId: Int) {
+    override fun completeTask(taskId: String) {
         getTaskWithId(taskId)?.let {
             completeTask(it)
         }
@@ -122,7 +122,7 @@ class TasksRepository(
         }
     }
 
-    override fun activateTask(taskId: Int) {
+    override fun activateTask(taskId: String) {
         getTaskWithId(taskId)?.let {
             activateTask(it)
         }
@@ -134,7 +134,7 @@ class TasksRepository(
 
         cachedTasks = cachedTasks.filterValues {
             !it.isCompleted
-        } as LinkedHashMap<Int, Task>
+        } as LinkedHashMap<String, Task>
     }
 
     /**
@@ -145,7 +145,7 @@ class TasksRepository(
      * Note: [TasksDataSource.GetTaskCallback.onDataNotAvailable] is fired if both data sources fail to
      * get the data.
      */
-    override fun getTask(taskId: Int, callback: TasksDataSource.GetTaskCallback) {
+    override fun getTask(taskId: String, callback: TasksDataSource.GetTaskCallback) {
         val taskInCache = getTaskWithId(taskId)
 
         // Respond immediately with cache if available
@@ -192,7 +192,7 @@ class TasksRepository(
         cachedTasks.clear()
     }
 
-    override fun deleteTask(taskId: Int) {
+    override fun deleteTask(taskId: String) {
         tasksRemoteDataSource.deleteTask(taskId)
         tasksLocalDataSource.deleteTask(taskId)
         cachedTasks.remove(taskId)
@@ -227,13 +227,13 @@ class TasksRepository(
         }
     }
 
-    private fun getTaskWithId(id: Int) = cachedTasks[id]
+    private fun getTaskWithId(taskId: String) = cachedTasks[taskId]
 
     private inline fun cacheAndPerform(task: Task, perform: (Task) -> Unit) {
-        val cachedTask = Task(task.id, task.title, task.detail, task.isCompleted).apply {
+        val cachedTask = Task(task.id, task.taskId, task.title, task.detail, task.isCompleted).apply {
             isCompleted = task.isCompleted
         }
-        cachedTask.id?.let { cachedTasks.put(it, cachedTask) }
+        cachedTask.taskId?.let { cachedTasks.put(it, cachedTask) }
         perform(cachedTask)
     }
 

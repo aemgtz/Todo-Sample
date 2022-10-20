@@ -57,7 +57,7 @@ class AddEditTaskActivity : AppCompatActivity() {
         addEditTaskFragment.arguments = Bundle().apply {
             this.putParcelable(EXTRA_TASK, task)
         }
-        addEditTaskPresenter = AddEditTaskPresenter(null, addEditTaskFragment,  Injection.provideTasksRepository(applicationContext))
+        //addEditTaskPresenter = AddEditTaskPresenter(null, addEditTaskFragment,  Injection.provideTasksRepository(applicationContext))
     }
 
     companion object {

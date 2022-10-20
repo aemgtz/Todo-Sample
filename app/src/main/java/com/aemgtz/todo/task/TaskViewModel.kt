@@ -23,11 +23,11 @@ class TaskViewModel(private val tasksRepository: TasksRepository) : ViewModel() 
 
         @SuppressLint("StaticFieldLeak")
         @Volatile private var INSTANCE: TaskViewModel? = null
-        fun getInstance(application: Application) =
-            INSTANCE ?: synchronized(TaskViewModel::class.java) {
-                INSTANCE ?: TaskViewModel(
-                    Injection.provideTasksRepository(application.applicationContext))
-                    .also { INSTANCE = it }
-            }
+//        fun getInstance(application: Application) =
+//            INSTANCE ?: synchronized(TaskViewModel::class.java) {
+//                INSTANCE ?: TaskViewModel(
+//                    Injection.provideTasksRepository(application.applicationContext))
+//                    .also { INSTANCE = it }
+//            }
     }
 }

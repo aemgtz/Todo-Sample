@@ -1,6 +1,5 @@
 package com.aemgtz.todo
 
-import android.util.Log
 import com.aemgtz.todo.data.Task
 import org.junit.Test
 

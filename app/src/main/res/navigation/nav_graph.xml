@@ -13,14 +13,19 @@
 
         <action
             android:id="@+id/action_LoginFragment_to_TaskFragment"
-            app:destination="@id/TaskFragment" />
+            app:destination="@id/TaskFragment"
+            app:enterAnim="@anim/fui_slide_in_right" />
     </fragment>
     <fragment
         android:id="@+id/TaskFragment"
         android:name="com.aemgtz.todo.task.TaskFragment"
         android:label="@string/task_fragment_label"
         tools:layout="@layout/fragment_task">
-
+        <argument
+            android:name="user"
+            app:argType="com.google.firebase.auth.FirebaseUser"
+            android:defaultValue="@null"
+            app:nullable="true" />
         <action
             android:id="@+id/action_TaskFragment_to_AddEditTaskFragment"
             app:destination="@id/AddEditTaskFragment" />

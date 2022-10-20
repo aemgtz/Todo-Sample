@@ -51,7 +51,7 @@ class TasksLocalDataSource private constructor(
      * Note: [TasksDataSource.GetTaskCallback.onDataNotAvailable] is fired if the [Task] isn't
      * found.
      */
-    override fun getTask(taskId: Int, callback: TasksDataSource.GetTaskCallback) {
+    override fun getTask(taskId: String, callback: TasksDataSource.GetTaskCallback) {
         appExecutors.diskIO.execute {
             val task = tasksDao.getTaskById(taskId)
             appExecutors.mainThread.execute {
@@ -70,30 +70,25 @@ class TasksLocalDataSource private constructor(
 
     override fun saveTask(task: Task, callback: TasksDataSource.GetTaskCallback) {
         appExecutors.diskIO.execute {
-            val id = tasksDao.insertTask(task)
-            val savedTask = tasksDao.getTaskById(id.toInt())
-            if (savedTask != null) {
-                callback.onTaskLoaded(savedTask)
-            } else {
-                callback.onDataNotAvailable()
-            }
+            tasksDao.insertTask(task)
+            callback.onTaskLoaded(task)
         }
     }
 
     override fun completeTask(task: Task) {
-        appExecutors.diskIO.execute { task.id?.let { tasksDao.updateCompleted(it, true) } }
+        appExecutors.diskIO.execute { task.taskId?.let { tasksDao.updateCompleted(it, true) } }
     }
 
-    override fun completeTask(taskId: Int) {
+    override fun completeTask(taskId: String) {
         // Not required for the local data source because the {@link TasksRepository} handles
         // converting from a {@code taskId} to a {@link task} using its cached data.
     }
 
     override fun activateTask(task: Task) {
-        appExecutors.diskIO.execute { task.id?.let { tasksDao.updateCompleted(it, false) } }
+        appExecutors.diskIO.execute { task.taskId?.let { tasksDao.updateCompleted(it, false) } }
     }
 
-    override fun activateTask(taskId: Int) {
+    override fun activateTask(taskId: String) {
         // Not required for the local data source because the {@link TasksRepository} handles
         // converting from a {@code taskId} to a {@link task} using its cached data.
     }
@@ -111,7 +106,7 @@ class TasksLocalDataSource private constructor(
         appExecutors.diskIO.execute { tasksDao.deleteTasks() }
     }
 
-    override fun deleteTask(taskId: Int) {
+    override fun deleteTask(taskId: String) {
         appExecutors.diskIO.execute { tasksDao.deleteTaskById(taskId) }
     }
 

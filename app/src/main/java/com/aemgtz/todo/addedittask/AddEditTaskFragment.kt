@@ -82,9 +82,9 @@ class AddEditTaskFragment : Fragment(), AddEditTaskContract.View {
 
     private fun saveTask(title: String, detail: String) {
         val saveTask = if (task != null) {
-            Task(task!!.id, title, detail, task!!.isCompleted)
+            Task(task!!.id, task!!.taskId, title, detail, task!!.isCompleted)
         }else{
-            Task(null, title, detail, false)
+            Task(null, null, title, detail, false)
         }
         presenter?.saveTask(saveTask)
     }

@@ -42,7 +42,7 @@ class AddEditTaskPresenter(
     }
 
     override fun deleteTask(task: Task) {
-        task.id?.let {
+        task.taskId?.let {
             tasksRepository.deleteTask(it)
         }
     }

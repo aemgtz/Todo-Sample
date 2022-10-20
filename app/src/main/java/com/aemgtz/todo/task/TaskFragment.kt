@@ -6,7 +6,9 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.aemgtz.todo.addedittask.AddEditTaskActivity
 import com.aemgtz.todo.addedittask.AddEditTaskActivity.Companion.EXTRA_TASK
@@ -30,6 +32,8 @@ class TaskFragment() : Fragment(), TaskContract.View {
     // onDestroyView.
     private val binding get() = _binding!!
 
+    private val args : TaskFragmentArgs by navArgs()
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -40,13 +44,23 @@ class TaskFragment() : Fragment(), TaskContract.View {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        checkUser()
         setupTaskList()
-        presenter = TaskPresenter(this, Injection.provideTasksRepository(requireContext().applicationContext))
+        setupListeners()
+    }
 
+    private fun checkUser(){
+        val currentUser = args.user
+        if (currentUser != null){
+            Toast.makeText(requireContext(), "Welcome : ${currentUser.email}", Toast.LENGTH_LONG).show()
+            presenter = TaskPresenter(this, Injection.provideTasksRepository(requireContext().applicationContext, currentUser))
+        }
+    }
+
+    private fun setupListeners() {
         binding.fab.setOnClickListener {
             showAddTask(null)
         }
-
         binding.swipeRefreshLayout.setOnRefreshListener {
             presenter?.fetchTasks()
         }

@@ -42,7 +42,7 @@ import com.aemgtz.todo.data.Task
      * @param taskId the task id.
      * @return the task with taskId.
      */
-    @Query("SELECT * FROM Tasks WHERE id = :taskId") fun getTaskById(taskId: Int): Task?
+    @Query("SELECT * FROM Tasks WHERE taskIdentifier = :taskId") fun getTaskById(taskId: String): Task?
 
     /**
      * Insert a task in the database. If the task already exists, replace it.
@@ -65,15 +65,15 @@ import com.aemgtz.todo.data.Task
      * @param taskId    id of the task
      * @param completed status to be updated
      */
-    @Query("UPDATE tasks SET isCompleted = :completed WHERE id = :taskId")
-    fun updateCompleted(taskId: Int, completed: Boolean)
+    @Query("UPDATE tasks SET isCompleted = :completed WHERE taskIdentifier = :taskId")
+    fun updateCompleted(taskId: String, completed: Boolean)
 
     /**
      * Delete a task by id.
      *
      * @return the number of tasks deleted. This should always be 1.
      */
-    @Query("DELETE FROM Tasks WHERE id = :taskId") fun deleteTaskById(taskId: Int): Int
+    @Query("DELETE FROM Tasks WHERE taskIdentifier = :taskId") fun deleteTaskById(taskId: String): Int
 
     /**
      * Delete all tasks.

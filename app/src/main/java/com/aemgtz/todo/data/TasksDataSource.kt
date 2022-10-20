@@ -44,17 +44,17 @@ interface TasksDataSource {
 
     fun getTasks(callback: LoadTasksCallback)
 
-    fun getTask(taskId: Int, callback: GetTaskCallback)
+    fun getTask(taskId: String, callback: GetTaskCallback)
 
     fun saveTask(task: Task)
 
     fun completeTask(task: Task)
 
-    fun completeTask(taskId: Int)
+    fun completeTask(taskId: String)
 
     fun activateTask(task: Task)
 
-    fun activateTask(taskId: Int)
+    fun activateTask(taskId: String)
 
     fun clearCompletedTasks()
 
@@ -62,7 +62,7 @@ interface TasksDataSource {
 
     fun deleteAllTasks()
 
-    fun deleteTask(taskId: Int)
+    fun deleteTask(taskId: String)
 
     fun saveTask(task: Task, callback: GetTaskCallback)
 }

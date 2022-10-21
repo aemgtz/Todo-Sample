@@ -13,17 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.aemgtz.todo.data
+package com.aemgtz.todo
 
 import android.content.Context
+import com.aemgtz.todo.data.TasksRepository
 import com.aemgtz.todo.data.source.local.TasksLocalDataSource
 import com.aemgtz.todo.data.source.local.ToDoDatabase
 import com.aemgtz.todo.data.source.remote.TasksRemoteDataSource
 import com.aemgtz.todo.utils.AppExecutors
-import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.ktx.Firebase
 
 /**
  * Enables injection of mock implementations for

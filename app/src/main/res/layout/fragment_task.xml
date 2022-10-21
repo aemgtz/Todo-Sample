@@ -6,8 +6,8 @@
         <import type="android.view.View" />
         <import type="androidx.core.content.ContextCompat" />
         <variable
-            name="viewmodel"
-            type="com.aemgtz.todo.task.TaskViewModel" />
+            name="viewModel"
+            type="com.aemgtz.todo.task.TasksViewModel" />
     </data>
 
     <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:tools="http://schemas.android.com/tools"
@@ -19,6 +19,7 @@
             android:id="@+id/swipeRefreshLayout"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            app:refreshing="@{viewModel.dataLoading}"
             tools:context=".task.TaskFragment">
 
             <androidx.recyclerview.widget.RecyclerView

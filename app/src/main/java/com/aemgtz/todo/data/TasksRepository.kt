@@ -60,6 +60,7 @@ class TasksRepository(
         if (cacheIsDirty) {
             // If the cache is dirty we need to fetch new data from the network.
             getTasksFromRemoteDataSource(callback)
+
         } else {
             // Query the local storage if available. If not, query the network.
             tasksLocalDataSource.getTasks(object : TasksDataSource.LoadTasksCallback {
@@ -84,18 +85,31 @@ class TasksRepository(
     }
 
     override fun saveTask(task: Task, callback: TasksDataSource.GetTaskCallback) {
-        tasksLocalDataSource.saveTask(task, object : TasksDataSource.GetTaskCallback{
+
+        tasksRemoteDataSource.saveTask(task, object : TasksDataSource.GetTaskCallback{
             override fun onTaskLoaded(task: Task) {
                 cacheAndPerform(task) {
-                    tasksRemoteDataSource.saveTask(task)
-                    callback.onTaskLoaded(task)
+                    tasksLocalDataSource.saveTask(it)
+                    callback.onTaskLoaded(it)
                 }
             }
-
             override fun onDataNotAvailable() {
                 callback.onDataNotAvailable()
             }
         })
+
+//        tasksLocalDataSource.saveTask(task, object : TasksDataSource.GetTaskCallback{
+//            override fun onTaskLoaded(task: Task) {
+//                cacheAndPerform(task) {
+//                    tasksRemoteDataSource.saveTask(task)
+//                    callback.onTaskLoaded(task)
+//                }
+//            }
+//
+//            override fun onDataNotAvailable() {
+//                callback.onDataNotAvailable()
+//            }
+//        })
     }
 
     override fun completeTask(task: Task) {

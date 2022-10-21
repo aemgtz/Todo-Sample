@@ -3,13 +3,14 @@ package com.aemgtz.todo
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.WindowCompat
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
-import android.view.Menu
-import android.view.MenuItem
 import com.aemgtz.todo.databinding.ActivityMainBinding
+import com.aemgtz.todo.task.TasksViewModel
+import com.aemgtz.todo.utils.obtainViewModel
 
 class MainActivity : AppCompatActivity() {
 
@@ -30,6 +31,8 @@ class MainActivity : AppCompatActivity() {
         setupActionBarWithNavController(navController, appBarConfiguration)
 
         actionBar?.hide()
+
+        //viewModel = ViewModelProvider(this)[TaskViewModel::class.java]
     }
 
 //    override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -53,4 +56,7 @@ class MainActivity : AppCompatActivity() {
         return navController.navigateUp(appBarConfiguration)
                 || super.onSupportNavigateUp()
     }
+
+    fun obtainViewModel(): TasksViewModel = obtainViewModel(TasksViewModel::class.java)
+
 }

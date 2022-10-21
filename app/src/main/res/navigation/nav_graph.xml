@@ -14,7 +14,9 @@
         <action
             android:id="@+id/action_LoginFragment_to_TaskFragment"
             app:destination="@id/TaskFragment"
-            app:enterAnim="@anim/fui_slide_in_right" />
+            app:enterAnim="@anim/fui_slide_in_right"
+            app:exitAnim="@anim/fui_slide_out_left"
+            />
     </fragment>
     <fragment
         android:id="@+id/TaskFragment"
@@ -28,10 +30,14 @@
             app:nullable="true" />
         <action
             android:id="@+id/action_TaskFragment_to_AddEditTaskFragment"
+            app:enterAnim="@anim/fui_slide_in_right"
+            app:exitAnim="@anim/fui_slide_out_left"
             app:destination="@id/AddEditTaskFragment" />
 
         <action
             android:id="@+id/action_TaskFragment_to_LoginFragment"
+            app:enterAnim="@anim/fui_slide_in_right"
+            app:exitAnim="@anim/fui_slide_out_left"
             app:destination="@id/LoginFragment" />
     </fragment>
 
@@ -40,8 +46,14 @@
         android:name="com.aemgtz.todo.addedittask.AddEditTaskFragment"
         android:label="@string/add_edit_task_fragment_label"
         tools:layout="@layout/fragment_add_edit_task">
+        <argument
+            android:name="task"
+            app:argType="com.aemgtz.todo.data.Task"
+            app:nullable="true" />
         <action
             android:id="@+id/action_AddEditTaskFragment_to_TaskFragment"
+            app:enterAnim="@anim/fui_slide_in_right"
+            app:exitAnim="@anim/fui_slide_out_left"
             app:destination="@id/TaskFragment" />
     </fragment>
 </navigation>

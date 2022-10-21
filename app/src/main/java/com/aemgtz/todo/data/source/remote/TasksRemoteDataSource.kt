@@ -15,21 +15,21 @@
  */
 package com.aemgtz.todo.data.source.remote
 
-import android.os.Handler
 import android.util.Log
 import androidx.annotation.VisibleForTesting
 import com.aemgtz.todo.data.Task
 import com.aemgtz.todo.data.TasksDataSource
-import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.ktx.Firebase
 
 /**
  * Implementation of the data source that adds a latency simulating network.
  */
-class TasksRemoteDataSource private constructor(private  val firebaseUser: FirebaseUser, private val fireStore : FirebaseFirestore) : TasksDataSource {
+class TasksRemoteDataSource private constructor() : TasksDataSource {
 
-
-    private var TASKS_SERVICE_DATA = LinkedHashMap<String, Task>(2)
+    private val firebaseFireStore by lazy { FirebaseFirestore.getInstance() }
 
     init {
 
@@ -41,8 +41,10 @@ class TasksRemoteDataSource private constructor(private  val firebaseUser: Fireb
      */
     override fun getTasks(callback: TasksDataSource.LoadTasksCallback) {
         // Simulate network by delaying the execution.
+        val user = Firebase.auth.currentUser
         // [START get_all_users]
-        fireStore.collection(TASK_COLLECTION_NAME)
+        firebaseFireStore.collection(TASK_COLLECTION_NAME)
+            .whereEqualTo(UUID, user?.uid)
             .get()
             .addOnSuccessListener { result ->
                 val tasks = mutableListOf<Task>()
@@ -54,7 +56,7 @@ class TasksRemoteDataSource private constructor(private  val firebaseUser: Fireb
                 callback.onTasksLoaded(tasks)
             }
             .addOnFailureListener { exception ->
-                Log.w("RemoteDataSource", "Error getting documents.", exception)
+                Log.w(TAG, "Error getting documents.", exception)
                 callback.onDataNotAvailable()
             }
         // [END get_all_users]
@@ -66,31 +68,43 @@ class TasksRemoteDataSource private constructor(private  val firebaseUser: Fireb
      * returns an error.
      */
     override fun getTask(taskId: String, callback: TasksDataSource.GetTaskCallback) {
-        val task = TASKS_SERVICE_DATA[taskId]
 
-        // Simulate network by delaying the execution.
-        with(Handler()) {
-            if (task != null) {
-                postDelayed({ callback.onTaskLoaded(task) }, Companion.SERVICE_LATENCY_IN_MILLIS)
-            } else {
-                postDelayed({ callback.onDataNotAvailable() }, Companion.SERVICE_LATENCY_IN_MILLIS)
-            }
-        }
     }
 
     override fun saveTask(task: Task) {
-        task.taskId?.let { TASKS_SERVICE_DATA.put(it, task) }
+
     }
 
     override fun saveTask(task: Task, callback: TasksDataSource.GetTaskCallback) {
 
+        val user = Firebase.auth.currentUser
+        val insertTask = hashMapOf(
+            "uuid" to user?.uid,
+            "title" to task.title,
+            "detail" to task.detail,
+            "isCompleted" to task.isCompleted
+        )
+        val operation = if (task.taskId != null){
+            firebaseFireStore.collection(TASK_COLLECTION_NAME).document(task.taskId!!).set(insertTask)
+        }else{
+            firebaseFireStore.collection(TASK_COLLECTION_NAME).add(insertTask)
+        }
+        operation.addOnSuccessListener { documentReference ->
+                Log.d(TAG, "DocumentSnapshot added with ID: $documentReference")
+            if (documentReference != null){
+                task.taskId = (documentReference as DocumentSnapshot).id
+                callback.onTaskLoaded(task)
+            }else{
+                callback.onTaskLoaded(task)
+            }
+            }.addOnFailureListener { exception ->
+                Log.w(TAG, "Error adding document ${exception.localizedMessage}")
+                callback.onDataNotAvailable()
+            }
     }
 
     override fun completeTask(task: Task) {
-        val completedTask = Task(task.id, task.taskId, task.title, task.detail, true).apply {
-            isCompleted = true
-        }
-        task.taskId?.let { TASKS_SERVICE_DATA.put(it, completedTask) }
+
     }
 
     override fun completeTask(taskId: String) {
@@ -99,8 +113,7 @@ class TasksRemoteDataSource private constructor(private  val firebaseUser: Fireb
     }
 
     override fun activateTask(task: Task) {
-        val activeTask = Task(task.id, task.taskId, task.title, task.detail, task.isCompleted)
-        task.taskId?.let { TASKS_SERVICE_DATA.put(it, activeTask) }
+
     }
 
     override fun activateTask(taskId: String) {
@@ -109,8 +122,7 @@ class TasksRemoteDataSource private constructor(private  val firebaseUser: Fireb
     }
 
     override fun clearCompletedTasks() {
-        TASKS_SERVICE_DATA = TASKS_SERVICE_DATA.filterValues { !it.isCompleted
-        } as LinkedHashMap<String, Task>
+
     }
 
     override fun refreshTasks() {
@@ -119,26 +131,28 @@ class TasksRemoteDataSource private constructor(private  val firebaseUser: Fireb
     }
 
     override fun deleteAllTasks() {
-        TASKS_SERVICE_DATA.clear()
-    }
+     }
 
     override fun deleteTask(taskId: String) {
-        TASKS_SERVICE_DATA.remove(taskId)
+        firebaseFireStore.collection(TASK_COLLECTION_NAME).document(taskId).delete()
+            .addOnSuccessListener { Log.d(TAG, "DocumentSnapshot successfully deleted!") }
+            .addOnFailureListener { e -> Log.w(TAG, "Error deleting document", e) }
     }
 
 
     companion object {
 
-        private const val SERVICE_LATENCY_IN_MILLIS = 5000L
         private const val TASK_COLLECTION_NAME = "tasks"
+        private const val UUID = "uuid"
+        private const val TAG = "TasksRemoteDataSource"
 
         private var INSTANCE: TasksRemoteDataSource? = null
 
         @JvmStatic
-        fun getInstance(firebaseUser: FirebaseUser, fireStore: FirebaseFirestore): TasksRemoteDataSource {
+        fun getInstance(): TasksRemoteDataSource {
             if (INSTANCE == null) {
                 synchronized(TasksRemoteDataSource::javaClass) {
-                    INSTANCE = TasksRemoteDataSource(firebaseUser, fireStore)
+                    INSTANCE = TasksRemoteDataSource()
                 }
             }
             return INSTANCE!!

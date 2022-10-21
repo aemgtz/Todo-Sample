@@ -11,7 +11,6 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.aemgtz.todo.R
 import com.aemgtz.todo.databinding.FragmentLoginBinding
-import com.aemgtz.todo.task.TaskFragmentDirections
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions

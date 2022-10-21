@@ -16,38 +16,57 @@
 
 package com.aemgtz.todo.addedittask
 
-import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import com.aemgtz.todo.addedittask.AddEditTaskActivity.Companion.EXTRA_TASK
+import androidx.navigation.fragment.findNavController
+import androidx.navigation.fragment.navArgs
+import com.aemgtz.todo.MainActivity
 import com.aemgtz.todo.data.Task
 import com.aemgtz.todo.databinding.FragmentAddEditTaskBinding
+import com.aemgtz.todo.utils.obtainViewModel
 
 /**
  * Main UI for the add task screen. Users can enter a task title and description.
  */
-class AddEditTaskFragment : Fragment(), AddEditTaskContract.View {
+class AddEditTaskFragment : Fragment(){
 
-
-    override var presenter: AddEditTaskContract.Presenter? = null
     private var _binding: FragmentAddEditTaskBinding? = null
-
     private val binding get() = _binding!!
     private var task: Task? = null
+
+    private val args : AddEditTaskFragmentArgs by navArgs()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        _binding = FragmentAddEditTaskBinding.inflate(inflater, container, false)
+    ): View {
+        _binding = FragmentAddEditTaskBinding.inflate(inflater, container, false).apply {
+            viewModel = (activity as MainActivity).obtainViewModel(AddEditTaskViewModel::class.java)
+        }
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        binding.lifecycleOwner = this.viewLifecycleOwner
+        binding.viewModel?.start()
+        initListeners()
+        initArguments()
+    }
+
+    private fun initArguments() {
+        task = args.task
+        task?.let {
+            binding.addTaskTitle.setText(it.title)
+            binding.addTaskDescription.setText(it.detail)
+            binding.deleteButton.visibility = View.VISIBLE
+        }
+    }
+
+    private fun initListeners() {
         binding.saveButton.setOnClickListener {
             val title = binding.addTaskTitle.text.toString()
             val detail = binding.addTaskDescription.text.toString()
@@ -63,17 +82,16 @@ class AddEditTaskFragment : Fragment(), AddEditTaskContract.View {
             }
         }
 
-        task = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            arguments?.getParcelable(EXTRA_TASK, Task::class.java)
-        } else {
-            arguments?.getParcelable(EXTRA_TASK) as Task?
+        binding.viewModel?.isTaskSaved?.observe(viewLifecycleOwner) {
+            if (it){
+                navigateToTaskList()
+            }
         }
+    }
 
-        task?.let {
-            binding.addTaskTitle.setText(it.title)
-            binding.addTaskDescription.setText(it.detail)
-            binding.deleteButton.visibility = View.VISIBLE
-        }
+    private fun navigateToTaskList(){
+        val direction = AddEditTaskFragmentDirections.actionAddEditTaskFragmentToTaskFragment()
+        findNavController().navigate(direction)
     }
 
     override fun onResume() {
@@ -86,15 +104,10 @@ class AddEditTaskFragment : Fragment(), AddEditTaskContract.View {
         }else{
             Task(null, null, title, detail, false)
         }
-        presenter?.saveTask(saveTask)
+        binding.viewModel?.saveTask(saveTask)
     }
 
     private fun deleteTask(task: Task){
-        presenter?.deleteTask(task)
-        activity?.finish()
-    }
-
-    override fun onTaskSaved(task: Task) {
         activity?.finish()
     }
 

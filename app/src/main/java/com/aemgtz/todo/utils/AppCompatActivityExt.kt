@@ -22,6 +22,10 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentTransaction
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
+import com.aemgtz.todo.ViewModelFactory
 
 /**
  * The `fragment` is added to the container view with id `frameId`. The operation is
@@ -50,6 +54,9 @@ fun AppCompatActivity.setupActionBar(@IdRes toolbarId: Int, action: ActionBar.()
     }
 }
 
+fun <T : ViewModel> AppCompatActivity.obtainViewModel(viewModelClass: Class<T>) =
+    ViewModelProvider(this, ViewModelFactory.getInstance(application))[viewModelClass]
+
 /**
  * Runs a FragmentTransaction, then calls commit().
  */
@@ -58,3 +65,4 @@ private inline fun FragmentManager.transact(action: FragmentTransaction.() -> Un
         action()
     }.commit()
 }
+

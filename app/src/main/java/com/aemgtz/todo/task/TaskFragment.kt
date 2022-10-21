@@ -9,7 +9,9 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.aemgtz.todo.MainActivity
 import com.aemgtz.todo.R
 import com.aemgtz.todo.data.Task
@@ -20,7 +22,7 @@ import com.google.firebase.ktx.Firebase
 /**
  * A simple [Fragment] subclass as the default destination in the navigation.
  */
-class TaskFragment() : Fragment() {
+class TaskFragment : Fragment() {
 
     private var taskAdapter: TaskAdapter? = null
     private var _binding: FragmentTaskBinding? = null
@@ -97,10 +99,30 @@ class TaskFragment() : Fragment() {
     }
 
     private fun setupTaskList() {
+
         val linearLayoutManager = LinearLayoutManager(requireContext())
         binding.taskRecyclerView.setHasFixedSize(false)
         binding.taskRecyclerView.isNestedScrollingEnabled = false
         binding.taskRecyclerView.layoutManager = linearLayoutManager
+
+        ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(0,
+            ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT) {
+            override fun onMove(
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder,
+                target: RecyclerView.ViewHolder
+            ): Boolean {
+                return false
+            }
+
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                val task = taskAdapter?.dataSource?.get(viewHolder.adapterPosition)
+                task?.let {
+                    binding.viewModel?.deleteTask(task)
+                }
+            }
+        }).attachToRecyclerView(binding.taskRecyclerView)
+
 
         taskAdapter = TaskAdapter(taskActionListener)
         binding.taskRecyclerView.adapter = taskAdapter

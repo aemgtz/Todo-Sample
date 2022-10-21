@@ -71,7 +71,9 @@ class TasksLocalDataSource private constructor(
     override fun saveTask(task: Task, callback: TasksDataSource.GetTaskCallback) {
         appExecutors.diskIO.execute {
             tasksDao.insertTask(task)
-            callback.onTaskLoaded(task)
+            appExecutors.mainThread.execute {
+                callback.onTaskLoaded(task)
+            }
         }
     }
 

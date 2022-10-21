@@ -108,7 +108,7 @@ class AddEditTaskFragment : Fragment(){
     }
 
     private fun deleteTask(task: Task){
-        activity?.finish()
+        binding.viewModel?.deleteTask(task)
     }
 
     companion object {

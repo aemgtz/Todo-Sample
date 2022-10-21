@@ -20,6 +20,7 @@ import androidx.annotation.VisibleForTesting
 import com.aemgtz.todo.data.Task
 import com.aemgtz.todo.data.TasksDataSource
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.ktx.Firebase
@@ -92,7 +93,7 @@ class TasksRemoteDataSource private constructor() : TasksDataSource {
         operation.addOnSuccessListener { documentReference ->
                 Log.d(TAG, "DocumentSnapshot added with ID: $documentReference")
             if (documentReference != null){
-                task.taskId = (documentReference as DocumentSnapshot).id
+                task.taskId = (documentReference as DocumentReference).id
                 callback.onTaskLoaded(task)
             }else{
                 callback.onTaskLoaded(task)

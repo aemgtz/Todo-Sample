@@ -37,4 +37,9 @@ class TasksViewModel(private val tasksRepository: TasksRepository) : ViewModel()
         })
     }
 
+    fun deleteTask(task: Task){
+        task.taskId?.let {
+            tasksRepository.deleteTask(it)
+        }
+    }
 }

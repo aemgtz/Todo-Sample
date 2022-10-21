@@ -98,18 +98,6 @@ class TasksRepository(
             }
         })
 
-//        tasksLocalDataSource.saveTask(task, object : TasksDataSource.GetTaskCallback{
-//            override fun onTaskLoaded(task: Task) {
-//                cacheAndPerform(task) {
-//                    tasksRemoteDataSource.saveTask(task)
-//                    callback.onTaskLoaded(task)
-//                }
-//            }
-//
-//            override fun onDataNotAvailable() {
-//                callback.onDataNotAvailable()
-//            }
-//        })
     }
 
     override fun completeTask(task: Task) {

@@ -42,6 +42,13 @@ interface TasksDataSource {
         fun onDataNotAvailable()
     }
 
+    interface TaskCallback<T> {
+
+        fun onTaskLoaded(result: T)
+
+        fun onDataNotAvailable()
+    }
+
     fun getTasks(callback: LoadTasksCallback)
 
     fun getTask(taskId: String, callback: GetTaskCallback)
@@ -62,7 +69,7 @@ interface TasksDataSource {
 
     fun deleteAllTasks()
 
-    fun deleteTask(taskId: String)
+    fun deleteTask(taskId: String, callback: TaskCallback<Boolean>)
 
     fun saveTask(task: Task, callback: GetTaskCallback)
 }

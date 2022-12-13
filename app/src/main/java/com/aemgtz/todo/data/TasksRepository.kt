@@ -194,9 +194,25 @@ class TasksRepository(
         cachedTasks.clear()
     }
 
-    override fun deleteTask(taskId: String) {
-        tasksRemoteDataSource.deleteTask(taskId)
-        tasksLocalDataSource.deleteTask(taskId)
+    override fun deleteTask(taskId: String, callback: TasksDataSource.TaskCallback<Boolean>) {
+        tasksRemoteDataSource.deleteTask(taskId, object: TasksDataSource.TaskCallback<Boolean>{
+            override fun onTaskLoaded(result: Boolean) {
+                tasksLocalDataSource.deleteTask(taskId, object: TasksDataSource.TaskCallback<Boolean>{
+                    override fun onTaskLoaded(result: Boolean) {
+                        callback.onTaskLoaded(true)
+                    }
+
+                    override fun onDataNotAvailable() {
+                        callback.onTaskLoaded(false)
+                    }
+                })
+            }
+
+            override fun onDataNotAvailable() {
+                callback.onTaskLoaded(false)
+            }
+        })
+
         cachedTasks.remove(taskId)
     }
 

@@ -39,7 +39,16 @@ class TasksViewModel(private val tasksRepository: TasksRepository) : ViewModel()
 
     fun deleteTask(task: Task){
         task.taskId?.let {
-            tasksRepository.deleteTask(it)
+            _dataLoading.value = true
+            tasksRepository.deleteTask(it, object : TasksDataSource.TaskCallback<Boolean>{
+                override fun onTaskLoaded(result: Boolean) {
+                    _dataLoading.value = false
+                }
+
+                override fun onDataNotAvailable() {
+                    _dataLoading.value = false
+                }
+            })
         }
     }
 }

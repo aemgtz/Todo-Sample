@@ -108,8 +108,14 @@ class TasksLocalDataSource private constructor(
         appExecutors.diskIO.execute { tasksDao.deleteTasks() }
     }
 
-    override fun deleteTask(taskId: String) {
-        appExecutors.diskIO.execute { tasksDao.deleteTaskById(taskId) }
+    override fun deleteTask(taskId: String, callback: TasksDataSource.TaskCallback<Boolean>) {
+        appExecutors.diskIO.execute {
+            tasksDao.deleteTasks()
+            appExecutors.mainThread.execute {
+                callback.onTaskLoaded(true)
+            }
+        }
+
     }
 
     companion object {

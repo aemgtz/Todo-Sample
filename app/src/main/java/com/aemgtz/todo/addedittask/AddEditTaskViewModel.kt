@@ -31,8 +31,16 @@ class AddEditTaskViewModel(private val tasksRepository: TasksRepository) : ViewM
 
     fun deleteTask(task: Task){
         task.taskId?.let {
-            tasksRepository.deleteTask(it)
-            _isTaskSaved.value = true
+            tasksRepository.deleteTask(it, object : TasksDataSource.TaskCallback<Boolean>{
+                override fun onTaskLoaded(result: Boolean) {
+                    TODO("Not yet implemented")
+                    _isTaskSaved.value = true
+                }
+
+                override fun onDataNotAvailable() {
+                    TODO("Not yet implemented")
+                }
+            })
         }
     }
 }

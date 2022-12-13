@@ -134,10 +134,14 @@ class TasksRemoteDataSource private constructor() : TasksDataSource {
     override fun deleteAllTasks() {
      }
 
-    override fun deleteTask(taskId: String) {
+    override fun deleteTask(taskId: String, callback: TasksDataSource.TaskCallback<Boolean>) {
         firebaseFireStore.collection(TASK_COLLECTION_NAME).document(taskId).delete()
-            .addOnSuccessListener { Log.d(TAG, "DocumentSnapshot successfully deleted!") }
-            .addOnFailureListener { e -> Log.w(TAG, "Error deleting document", e) }
+            .addOnSuccessListener { Log.d(TAG, "DocumentSnapshot successfully deleted!")
+
+            }
+            .addOnFailureListener { e -> Log.w(TAG, "Error deleting document", e)
+
+            }
     }
 
 

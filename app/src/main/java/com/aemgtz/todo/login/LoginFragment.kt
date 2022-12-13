@@ -73,7 +73,6 @@ class LoginFragment : Fragment(){
         requestFirebaseAuthActivity.launch(signInIntent)
     }
 
-
     private fun firebaseAuthWithGoogle(idToken: String) {
         val credential = GoogleAuthProvider.getCredential(idToken, null)
         auth.signInWithCredential(credential).addOnCompleteListener { task ->
